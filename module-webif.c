@@ -1158,6 +1158,9 @@ static char *send_oscam_config_gbox(struct templatevars *vars, struct uriparams 
 	char *value3 = mk_t_gbox_block_ecm();	
 	tpl_addVar(vars, TPLAPPEND, "GBOXBLOCKECM", value3);
 	free_mk_t(value3);
+	char *value4 = mk_t_accept_remm_peer();
+	tpl_addVar(vars, TPLAPPEND, "GBOXACCEPTREMM", value4);
+	free_mk_t(value4);
 /* 
  *	GBOX SMS
 */
@@ -7983,10 +7986,9 @@ static int32_t process_request(FILE * f, IN_ADDR_T in)
 		if(!ok)
 		{
 			send_error(f, 403, "Forbidden", NULL, "Access denied.", 0);
-			cs_log("unauthorized access from %s", cs_inet_ntoa(addr));
+			cs_log("unauthorized access from %s - invalid ip or dyndns", cs_inet_ntoa(addr));
 			return 0;
 		}
-
 		int32_t authok = 0;
 		char expectednonce[(MD5_DIGEST_LENGTH * 2) + 1], opaque[(MD5_DIGEST_LENGTH * 2) + 1];
 		char authheadertmp[sizeof(AUTHREALM) + sizeof(expectednonce) + sizeof(opaque) + 100];
