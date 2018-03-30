@@ -1,4 +1,6 @@
-e3850 Merge to r11401 from 'streamboard.tv/svn/oscam'
+79048 emu: update to r769,powervu hash has mode 10.
+4f904 emu r769: Add powervu hash mode 10
+349e0 Merge to r11401 from 'streamboard.tv/svn/oscam'
 d014c gbx-remm: - add delay to remm request message - to avoid multiple requests during zapping and multi-tuner operation
 19f93 Tryfix #4261 ECM doublecheck is broken
 9c652 gbx: - new feature: gbox remote emm - new parameter on client side in oscam.conf [gbox]: 'accept_remm_peer = crdsrv_peer1,crdsrv_peer2,...' - corrected Distribution/doc in terms of gbx and AU note: - In order to get remm working, both, oscam gbox cardserver and gbox client must have svn rev >= r10399 and dist = 1 - oscam gbox < r10399 ignores remm feature, also orig. gbox, diablo etc
@@ -96,5 +98,3 @@ b5d06 fix warning in oscam-client.c macosx build
 651b3 fix warning in reader-dre-common.c macosx build
 d99cb fix warning in reader-nagra.c macosx build
 d338a [gbx] - was commented by accident - needed for webif tests
-8e7f6 fix gcc 6.x Warnung: logical not is only applied to the left hand side of comparison [-Wlogical-not-parentheses]
-391a0 r11293 broke reshare > 2 hops. To use GBOX_MAXHOPS as upper limit makes more sense anyway.

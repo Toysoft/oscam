@@ -101,7 +101,7 @@ static bool use_srvid2 = false;
 #define MNU_CFG_LCD			14
 #define MNU_CFG_MONITOR		15
 #define MNU_CFG_WEBIF		16
-#define MNU_CFG_STREAMRELAY 17
+#define MNU_CFG_STREAMRELAY	17
 
 /* constants for files.html submenuactivating */
 #define MNU_CFG_FVERSION	0
@@ -134,10 +134,10 @@ static bool use_srvid2 = false;
 #define MNU_GBX_FSMSNACK    	26
 #define MNU_GBX_FSTAINF     	27
 #define MNU_GBX_FEXPINF     	28
-#define MNU_CFG_FSOFTCAMKEY	29
-#define MNU_GBX_INFOLOG     	30
+#define MNU_GBX_INFOLOG     	29
+#define MNU_CFG_FSOFTCAMKEY	30
 
-#define MNU_CFG_TOTAL_ITEMS 	31 // sum of items above. Use it for "All inactive" in function calls too.
+#define MNU_CFG_TOTAL_ITEMS 	31 // sum of config or files items above. Use it for "All inactive" in function calls too.
 
 static void set_status_info_var(struct templatevars *vars, char *varname, int no_data, char *fmt, double value) {
 	if (no_data)
@@ -1238,7 +1238,7 @@ static char *send_oscam_config_streamrelay(struct templatevars *vars, struct uri
 		{ tpl_printf(vars, TPLADD, "STREAM_SOURCE_AUTH_PASSWORD", "%s", cfg.emu_stream_source_auth_password); }
 	tpl_printf(vars, TPLADD, "STREAM_RELAY_PORT", "%d", cfg.emu_stream_relay_port);
 	tpl_printf(vars, TPLADD, "STREAM_ECM_DELAY", "%d", cfg.emu_stream_ecm_delay);
-
+	
 	tpl_printf(vars, TPLADD, "TMP", "STREAMRELAYENABLEDSELECTED%d", cfg.emu_stream_relay_enabled);
 	tpl_addVar(vars, TPLADD, tpl_getVar(vars, "TMP"), "selected");
 
@@ -1317,7 +1317,6 @@ static char *send_oscam_config_cccam(struct templatevars *vars, struct uriparams
 
 	tpl_addVar(vars, TPLADD, "STEALTH", (cfg.cc_stealth == 1) ? "checked" : "");
 
-	tpl_printf(vars,TPLADD, "CCCFGFILE","%s",cfg.cc_cfgfile);
 	tpl_printf(vars, TPLADD, "NODEID", "%02X%02X%02X%02X%02X%02X%02X%02X",
 			   cfg.cc_fixed_nodeid[0], cfg.cc_fixed_nodeid[1], cfg.cc_fixed_nodeid[2], cfg.cc_fixed_nodeid[3],
 			   cfg.cc_fixed_nodeid[4], cfg.cc_fixed_nodeid[5], cfg.cc_fixed_nodeid[6], cfg.cc_fixed_nodeid[7]);
@@ -1334,9 +1333,6 @@ static char *send_oscam_config_cccam(struct templatevars *vars, struct uriparams
 	tpl_addVar(vars, TPLADD, "FORWARDORIGINCARD", (cfg.cc_forward_origin_card == 1) ? "checked" : "");
 
 	tpl_addVar(vars, TPLADD, "KEEPCONNECTED", (cfg.cc_keep_connected == 1) ? "checked" : "");
-
-	if (cfg.cc_autosidblock)
-		tpl_printf(vars, TPLADD, "AUTOSIDBLOCK", "selected");
 
 	tpl_addVar(vars, TPLADDONCE, "CONFIG_CONTROL", tpl_getTpl(vars, "CONFIGCCCAMCTRL"));
 
@@ -1407,9 +1403,6 @@ static char *send_oscam_config_webif(struct templatevars *vars, struct uriparams
 
 	if(cfg.http_prepend_embedded_css)
 		{ tpl_addVar(vars, TPLADD, "HTTPPREPENDEMBEDDEDCSS", "checked"); }
-
-	if(cs_http_use_utf8)
-		tpl_addVar(vars,TPLADD,"HTTPUTF8","selected");
 
 	tpl_addVar(vars, TPLADD, "HTTPHELPLANG", cfg.http_help_lang);
 	tpl_addVar(vars, TPLADD, "HTTPLOCALE", cfg.http_locale);
@@ -1592,6 +1585,10 @@ static char *send_oscam_config_dvbapi(struct templatevars *vars, struct uriparam
 
 	//extended_cw_api
 	tpl_printf(vars, TPLADD, "TMP", "EXTENDEDCWAPISELECTED%d", cfg.dvbapi_extended_cw_api);
+	tpl_addVar(vars, TPLADD, tpl_getVar(vars, "TMP"), "selected");
+
+	//extended_cw_pids (pid limiter)
+	tpl_printf(vars, TPLADD, "TMP", "EXTENDEDCWPIDSSELECTED%d", cfg.dvbapi_extended_cw_pids);
 	tpl_addVar(vars, TPLADD, tpl_getVar(vars, "TMP"), "selected");
 
 	//write_sdt_prov
@@ -2198,12 +2195,6 @@ static char *send_oscam_reader_config(struct templatevars *vars, struct uriparam
 
 	// Reset Cycle
 	tpl_printf(vars, TPLADD, "RESETCYCLE", "%d", rdr->resetcycle);
-	// reset cycle mode
-	tpl_addVar(vars, TPLADD, "RESTARTFORRESETCYCLECHCECKED", (rdr->restartforresetcycle == 1) ? "checked" : "");
-
-	// Auto Restart after
-	tpl_printf(vars, TPLADD, "AUTORESTARTSECONDS", "%d", rdr->autorestartseconds);
-
 
 	// Disable Serverfilter
 	if(!apicall)
@@ -2691,21 +2682,7 @@ static char *send_oscam_reader_config(struct templatevars *vars, struct uriparam
 
 	if(rdr->detect_seca_nagra_tunneled_card)
 		{ tpl_addVar(vars, TPLADD, "NAGRADETECTSECACARDCHECKED", "checked"); }
-#ifdef READER_TONGFANG
-	if(rdr->tongfang3_calibsn)
-		{ tpl_printf(vars, TPLADD, "TONGFANGCALIBSN", "%08X", rdr->tongfang3_calibsn); }
-
-#endif
-#ifdef READER_JET
-	for(i = 0; (size_t)i < sizeof(rdr->jet_authorize_id) && rdr->jet_authorize_id[i] == 0; i++);
-	if((size_t)i <  sizeof(rdr->jet_authorize_id))
-	{
-		for(i = 0; (size_t)i <  sizeof(rdr->jet_authorize_id) ; i++)
-			{ tpl_printf(vars, TPLAPPEND, "JETAUTHORIZEID", "%02X", rdr->jet_authorize_id[i]); }
-	}
-	tpl_addVar(vars, TPLADD, "JETFIXECM", (rdr->jet_fix_ecm == 1) ? "checked" : "");
-#endif
-
+		
 #ifdef MODULE_CCCAM
 	tpl_printf(vars, TPLADD, "CCCMAXHOPS",   "%d", rdr->cc_maxhops);
 	tpl_printf(vars, TPLADD, "CCCMINDOWN",   "%d", rdr->cc_mindown);
@@ -2739,6 +2716,16 @@ static char *send_oscam_reader_config(struct templatevars *vars, struct uriparam
 	value = mk_t_ftab(&rdr->emu_auproviders);
 	tpl_addVar(vars, TPLADD, "EMUAUPROVIDERS", value);
 	free_mk_t(value);
+
+	// Date-coded BISS keys
+	if(!apicall)
+	{
+		tpl_addVar(vars, TPLADD, "EMUDATECODEDENABLED", (rdr->emu_datecodedenabled == 1) ? "checked" : "");
+	}
+	else
+	{
+		tpl_addVar(vars, TPLADD, "EMUDATECODEDENABLED", (rdr->emu_datecodedenabled == 1) ? "1" : "0");
+	}
 
 	//extee
 	tpl_addVar(vars, TPLADD, "EXTEE36", rdr->extee36);
@@ -4519,10 +4506,10 @@ static char *send_oscam_entitlement(struct templatevars *vars, struct uriparams 
 							if(item->isData) { tpl_addVar(vars, TPLADD, "ENTTYPE", "data"); }
 							else { tpl_addVar(vars, TPLADD, "ENTTYPE", "key"); }
 							tpl_addVar(vars, TPLADD, "ENTRESNAME", "");
-
+							
 							if((strcmp(getParam(params, "hideexpired"), "1") != 0) || (item->end > now))
-								{ tpl_addVar(vars, TPLAPPEND, "READERENTENTRY", tpl_getTpl(vars, "ENTITLEMENTITEMBIT")); }							
-
+								{ tpl_addVar(vars, TPLAPPEND, "READERENTENTRY", tpl_getTpl(vars, "ENTITLEMENTITEMBIT")); }
+							
 							continue;
 						}
 #endif
@@ -6447,10 +6434,10 @@ static char *send_oscam_files(struct templatevars * vars, struct uriparams * par
 		{ "gsms.nack",       MNU_GBX_FSMSNACK,  FTYPE_GBOX },     // id 26
 		{ "stats.info",      MNU_GBX_FSTAINF,   FTYPE_GBOX },     // id 27
 		{ "expired.info",    MNU_GBX_FEXPINF,   FTYPE_GBOX },     // id 28
-		{ "info.log",        MNU_GBX_INFOLOG,   FTYPE_GBOX },     // id 30
+		{ "info.log",        MNU_GBX_INFOLOG,   FTYPE_GBOX },     // id 29
 #endif
 #ifdef WITH_EMU
-		{ "SoftCam.Key",     MNU_CFG_FSOFTCAMKEY,FTYPE_CONFIG },	// id 29
+		{ "SoftCam.Key",     MNU_CFG_FSOFTCAMKEY,FTYPE_CONFIG },  // id 30
 #endif
 		{ NULL, 0, 0 },
 	};

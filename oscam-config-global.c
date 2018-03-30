@@ -16,7 +16,6 @@
 #define DEFAULT_HTTP_PORT   8888
 #define DEFAULT_HTTP_ALLOW  "127.0.0.1,192.168.0.0-192.168.255.255,10.0.0.0-10.255.255.255,::1"
 
-extern uint8_t cs_http_use_utf8;
 static void disablelog_fn(const char *token, char *value, void *UNUSED(setting), FILE *f)
 {
 	if(value)
@@ -524,17 +523,6 @@ static void http_dyndns_fn(const char *token, char *value, void *UNUSED(setting)
 	}
 }
 
-static void http_utf8_fn(const char *token, char *value, void *UNUSED(setting), FILE *f)
-{
-	if(value)
-	{
-		cfg.http_utf8 = strtoul(value, NULL, 10);
-		cs_http_use_utf8 = cfg.http_utf8;
-		return;
-	}
-	fprintf_conf(f, token, "%d\n",cfg.http_utf8);
-}
-
 static bool webif_should_save_fn(void *UNUSED(var))
 {
 	return cfg.http_port;
@@ -580,7 +568,6 @@ static const struct config_list webif_opts[] =
 	DEF_OPT_INT32("httpemmuclean"		 , OFS(http_emmu_clean)			, 256),
 	DEF_OPT_INT32("httpemmsclean"		 , OFS(http_emms_clean)			, -1),
 	DEF_OPT_INT32("httpemmgclean"		 , OFS(http_emmg_clean)			, -1),
-	DEF_OPT_FUNC("httputf8"			 , OFS(http_utf8) 			,http_utf8_fn),
 #ifdef WEBIF_LIVELOG
 	DEF_OPT_INT8("http_status_log"		 , OFS(http_status_log)			, 0),
 #else
@@ -823,8 +810,6 @@ static const struct config_list cccam_opts[] =
 	DEF_OPT_INT8("minimizecards"		, OFS(cc_minimize_cards),	0),
 	DEF_OPT_INT8("keepconnected"		, OFS(cc_keep_connected),	1),
 	DEF_OPT_UINT32("recv_timeout"		, OFS(cc_recv_timeout),		DEFAULT_CC_RECV_TIMEOUT),
-	DEF_OPT_STR("cccfgfile"             , OFS(cc_cfgfile),              NULL),
-	DEF_OPT_INT32("autosidblock"        , OFS(cc_autosidblock),         1),
 	DEF_LAST_OPT
 };
 #else
@@ -878,7 +863,7 @@ static bool streamrelay_should_save_fn(void *UNUSED(var))
 static const struct config_list streamrelay_opts[] =
 {
 	DEF_OPT_SAVE_FUNC(streamrelay_should_save_fn),
-	DEF_OPT_STR("stream_source_host"	      , OFS(emu_stream_source_host),          "127.0.0.1"),
+	DEF_OPT_STR("stream_source_host"          , OFS(emu_stream_source_host),          "127.0.0.1"),
 	DEF_OPT_INT32("stream_source_port"        , OFS(emu_stream_source_port),          8001),
 	DEF_OPT_STR("stream_source_auth_user"     , OFS(emu_stream_source_auth_user),     NULL),
 	DEF_OPT_STR("stream_source_auth_password" , OFS(emu_stream_source_auth_password), NULL),
@@ -1301,6 +1286,7 @@ static const struct config_list dvbapi_opts[] =
 	DEF_OPT_INT8("read_sdt"		, OFS(dvbapi_read_sdt),	0),
 	DEF_OPT_INT8("write_sdt_prov", OFS(dvbapi_write_sdt_prov),	0),
 	DEF_OPT_INT8("extended_cw_api", OFS(dvbapi_extended_cw_api),	0),
+	DEF_OPT_INT8("extended_cw_pids", OFS(dvbapi_extended_cw_pids),	64), // pid limiter
 	DEF_OPT_FUNC("boxtype"		, OFS(dvbapi_boxtype),		dvbapi_boxtype_fn),
 	DEF_OPT_FUNC("services"		, OFS(dvbapi_sidtabs.ok),	dvbapi_services_fn),
 	// OBSOLETE OPTIONS

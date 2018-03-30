@@ -1038,7 +1038,7 @@ static int8_t newcamd_auth_client(IN_ADDR_T ip, uint8_t *deskey)
 						}
 					}
 #endif
-
+					
 					if(!found)
 					{
 						mbuf[22 + 11 * j] = 0x00;

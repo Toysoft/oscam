@@ -1934,6 +1934,9 @@ int32_t main(int32_t argc, char *argv[])
  if(!cfg.gsms_dis)
 	{ stop_sms_sender(); }
 #endif
+#ifdef WITH_EMU
+	stop_stream_server();
+#endif
 	webif_close();
 	azbox_close();
 	coolapi_close_all();
